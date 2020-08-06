@@ -1,4 +1,4 @@
-# Diffuse
+## Diffuse [![CircleCI](https://circleci.com/gh/green-coder/diffuse.svg?style=svg)](https://circleci.com/gh/green-coder/diffuse)
 
 > “We but mirror the world. All the tendencies present in the
 > outer world are to be found in the world of our body.
@@ -13,9 +13,9 @@
 Diffuse is a library to create, use and manipulate diffs,
 to build the change you wish to see in your data.
 
-## Usage
+### Usage
 
-### Create diffs
+#### Create diffs
 
 Diffs are pure data. You can create them via some helper functions or write them directly.
 
@@ -36,7 +36,7 @@ Diffs are pure data. You can create them via some helper functions or write them
 ;                                    :conj #{:country/taiwan}}]}}
 ```
 
-### Operate on diffs
+#### Operate on diffs
 
 ```clojure
 (require '[diffuse.core :as d])
@@ -48,7 +48,7 @@ Diffs are pure data. You can create them via some helper functions or write them
 (d/apply diff data)
 ```
 
-### Example
+#### Example
 
 On sets:
 
@@ -96,7 +96,7 @@ On vectors:
 ;=> [Taiwan Beer number 1 !!!]
 ```
 
-## Use cases
+### Use cases
 
 You certainly wonder why this library was built, that's understandable.
 Sometimes things exist, are beautiful, and still don't make sense. That's how it is.
@@ -104,8 +104,13 @@ If you really want to find an answer to your question, ask deep inside of you ..
 
 Please open an issue if you find an answer, sharing is caring.
 
-## Status
+### Status
 
 Alpha quality, lack of error messages, tested, no known bug, usable.
 
 Note: While still in alpha, the API and data format may change.
+
+### License
+
+The Diffuse library is developed by Vincent Cantin.
+It is distributed under the terms of the Eclipse Public License version 2.0.

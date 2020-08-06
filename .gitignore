@@ -14,6 +14,5 @@ pom.xml.asc
 *.iml
 .shadow-cljs/
 node_modules/
-package-lock.json
 resources/public/js
 .cljs_node_repl
