@@ -95,21 +95,21 @@
          (h/assoc-in "whatever" [] 2))))
 
 (deftest let-test
-  (is (= '(clojure.core/let [a 101
-                             b 102
-                             c 103]
-            {:type :map
-             :key-op {:a [:assoc a]
-                      :b [:assoc b]
-                      :c [:update {:type :set
-                                   :conj #{c}}]
-                      :d :dissoc}})
-         (macroexpand-1 '(h/let [a 101
-                                 b 102
-                                 c 103]
-                           (d/comp (h/map-assoc :a a, :b b)
-                                   (h/map-update :c (h/set-conj c))
-                                   (h/map-dissoc :d))))))
+  ;(is (= '(clojure.core/let [a 101
+  ;                           b 102
+  ;                           c 103]
+  ;          {:type :map
+  ;           :key-op {:a [:assoc a]
+  ;                    :b [:assoc b]
+  ;                    :c [:update {:type :set
+  ;                                 :conj #{c}}]
+  ;                    :d :dissoc}})
+  ;       (macroexpand-1 '(h/let [a 101
+  ;                               b 102
+  ;                               c 103]
+  ;                         (d/comp (h/map-assoc :a a, :b b)
+  ;                                 (h/map-update :c (h/set-conj c))
+  ;                                 (h/map-dissoc :d))))))
   (is (= (d/comp (h/map-assoc :a 101, :b 102)
                  (h/map-update :c (h/set-conj 103))
                  (h/map-dissoc :d))
