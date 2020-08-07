@@ -1,4 +1,4 @@
-(ns diffuse.model
+(ns ^:no-doc diffuse.model
   (:require [clojure.set :as set]
             [minimallist.helper :as h]))
 

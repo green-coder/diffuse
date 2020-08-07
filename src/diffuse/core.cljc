@@ -33,7 +33,7 @@
      ```
      {:type :vector
       :index-op {[:no-op size0]
-                 [:update diff1]
+                 [:update [diff0 diff1 ...]]
                  [:remove size2]
                  [:insert [val0 val1 ...]]
                  ...}}
@@ -190,6 +190,8 @@
   ;; 2. :insert in new-iop has the second priority to go in the output.  (3 cases)
   ;; 3. :no-op in base-iop disappear and new-iop goes to the output.     (3 cases)
   ;; 4. for other cases, need to see both new-iop and base-iop together. (6 cases)
+  ;; 5. We can exchange contiguous :insert and :remove nodes without changing
+  ;;    the semantic of the diff.
 
   _)
 
@@ -205,45 +207,37 @@
       :else (let [[split-new-iops split-base-iops] (head-split new-iops base-iops)
                   [new-op new-arg :as new-iop] (first split-new-iops)
                   [base-op base-arg :as base-iop] (first split-base-iops)]
-              (cond
-                (= base-op :remove)
-                (recur (conj output base-iop)
-                       split-new-iops
-                       (rest split-base-iops))
-
-                (= new-op :insert)
+              (if (= new-op :insert)
                 (recur (conj output new-iop)
                        (rest split-new-iops)
                        split-base-iops)
-
-                (= base-op :no-op)
-                (recur (conj output new-iop)
-                       (rest split-new-iops)
-                       (rest split-base-iops))
-
-                (= base-op :update)
-                (case new-op
-                  :no-op (recur (conj output base-iop)
+                (case base-op
+                  :remove (recur (conj output base-iop)
+                                 split-new-iops
+                                 (rest split-base-iops))
+                  :no-op (recur (conj output new-iop)
                                 (rest split-new-iops)
                                 (rest split-base-iops))
-                  :update (recur (conj output [:update (mapv comp new-arg base-arg)])
-                                 (rest split-new-iops)
-                                 (rest split-base-iops))
-                  :remove (recur (conj output new-iop)
-                                 (rest split-new-iops)
-                                 (rest split-base-iops)))
-
-                (= base-op :insert)
-                (case new-op
-                  :no-op (recur (conj output base-iop)
-                                (rest split-new-iops)
-                                (rest split-base-iops))
-                  :update (recur (conj output [:insert (mapv apply new-arg base-arg)])
-                                 (rest split-new-iops)
-                                 (rest split-base-iops))
-                  :remove (recur output
-                                 (rest split-new-iops)
-                                 (rest split-base-iops))))))))
+                  :update (case new-op
+                            :no-op (recur (conj output base-iop)
+                                          (rest split-new-iops)
+                                          (rest split-base-iops))
+                            :update (recur (conj output [:update (mapv comp new-arg base-arg)])
+                                           (rest split-new-iops)
+                                           (rest split-base-iops))
+                            :remove (recur (conj output new-iop)
+                                           (rest split-new-iops)
+                                           (rest split-base-iops)))
+                  :insert (case new-op
+                            :no-op (recur (conj output base-iop)
+                                          (rest split-new-iops)
+                                          (rest split-base-iops))
+                            :update (recur (conj output [:insert (mapv apply new-arg base-arg)])
+                                           (rest split-new-iops)
+                                           (rest split-base-iops))
+                            :remove (recur output
+                                           (rest split-new-iops)
+                                           (rest split-base-iops)))))))))
 
 (defn- index-ops-canonical [iops]
   (into []

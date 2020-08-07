@@ -114,7 +114,7 @@
 
     [[:no-op 2] [:insert [1 2 3]]]
     [[:no-op 2] [:remove 2]]
-    [[:no-op 2] [:remove 2] [:insert [1 2]] [:insert [3]]]))
+    [[:no-op 2] [:insert [1 2]] [:insert [3]] [:remove 1] [:remove 1]]))
 
 
 (deftest index-ops-canonical-test
@@ -127,8 +127,14 @@
     [[:no-op 2] [:remove 2] [:insert [1 2]] [:insert [3]]]
     [[:no-op 2] [:remove 2] [:insert [1 2 3]]]
 
+    [[:no-op 2] [:insert [1 2]] [:insert [3]] [:remove 1] [:remove 1]]
+    [[:no-op 2] [:remove 2] [:insert [1 2 3]]]
+
     [[:remove 1] [:insert [1 2]] [:remove 1] [:insert [3]]]
-    [[:remove 2] [:insert [1 2 3]]]))
+    [[:remove 2] [:insert [1 2 3]]]
+
+    [[:no-op 1] [:no-op 1]]
+    [[:no-op 2]]))
 
 
 (deftest comp-diffs-test

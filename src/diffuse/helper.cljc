@@ -35,7 +35,7 @@
                  key-vals)})
 
 (defn map-update
-  "Returns a diff representing an update ."
+  "Returns a diff representing an update."
   [key diff & key-diffs]
   {:type :map
    :key-op (into {key [:update diff]}

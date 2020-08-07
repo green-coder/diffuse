@@ -1,4 +1,7 @@
-## Diffuse [![CircleCI](https://circleci.com/gh/green-coder/diffuse.svg?style=svg)](https://circleci.com/gh/green-coder/diffuse)
+## Diffuse
+[![CircleCI](https://circleci.com/gh/green-coder/diffuse.svg?style=svg)](https://circleci.com/gh/green-coder/diffuse)
+[![Clojars Project](https://img.shields.io/clojars/v/diffuse.svg)](https://clojars.org/diffuse)
+[![cljdoc badge](https://cljdoc.org/badge/diffuse/diffuse)](https://cljdoc.org/d/diffuse/diffuse/CURRENT)
 
 > “We but mirror the world. All the tendencies present in the
 > outer world are to be found in the world of our body.
