@@ -1,7 +1,8 @@
 (ns diffuse.helper
-  (:refer-clojure :exclude [assoc update update-in assoc-in])
+  (:refer-clojure :exclude [assoc update update-in assoc-in let])
   (:require [clojure.core :as cl]
-            [diffuse.core :as d]))
+            [diffuse.core :as d]
+            [clojure.walk :as walk]))
 
 (def no-op
   "A diff with no effect."
@@ -113,19 +114,32 @@
 (defn update-in
   "Returns a diff which represents an update-in on a given data."
   [data keys f-diff & args]
-  (let [up (fn up [data keys f args]
-             (if (seq keys)
-               (let [[key & rest-keys] keys]
-                 (->> (up (get data key) rest-keys f args)
-                      (update data key)))
-               (apply f data args)))]
+  (cl/let [up (fn up [data keys f args]
+                (if (seq keys)
+                  (cl/let [[key & rest-keys] keys]
+                    (->> (up (get data key) rest-keys f args)
+                         (update data key)))
+                  (apply f data args)))]
     (up data keys f-diff args)))
 
 (defn assoc-in
   "Returns a diff which represents an assoc-in on a given data."
   [data keys val]
   (if (seq keys)
-    (let [butlast-keys (butlast keys)
-          last-key (last keys)]
+    (cl/let [butlast-keys (butlast keys)
+             last-key (last keys)]
       (update-in data butlast-keys assoc last-key val))
     (value val)))
+
+(defmacro let
+  "This macro allows to compose diffs at compile time, for a better performance.
+   It only works with static keys and indexes. The values to assoc or insert have
+   to be defined in the bindings."
+  [bindings body]
+  (cl/let [replacement-map (into {}
+                                 (comp (partition-all 2)
+                                       (map (fn [[var _]]
+                                              [var `(symbol ~(name var))])))
+                                 bindings)]
+    `(cl/let ~bindings
+       ~(eval (walk/postwalk-replace replacement-map body)))))
