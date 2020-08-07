@@ -107,6 +107,25 @@ If you really want to find an answer to your question, ask deep inside of you ..
 
 Please open an issue if you find an answer, sharing is caring.
 
+### Other diff libraries
+
+The focus of Diffuse is to:
+- manually build a representation of data structure differences,
+- compose them together,
+- and apply them on data (this action is also known as "patching").
+
+You use Diffuse when you know the difference and want to use it,
+hence the name "diff ... use".
+
+On the opposite, When you have 2 versions of a data structure and
+you don't know their difference, you can calculate it via one of
+those libraries:
+
+- [deep-diff2](https://github.com/lambdaisland/deep-diff2)
+- [Editscript](https://github.com/juji-io/editscript), whose
+  author wrote the very useful blogpost
+  "[Comparing Clojure Diff Libraries](https://juji.io/blog/comparing-clojure-diff-libraries/)".
+
 ### Status
 
 Alpha quality, lack of error messages, tested, no known bug, usable.
