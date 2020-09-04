@@ -11,6 +11,10 @@
     (= [(m/valid? diff-model diff) (d/apply diff data)]
        [true result])
 
+    {:type :missing}
+    "Hello"
+    nil
+
     {:type :value
      :value "Bonjour"}
     "Hello"
@@ -157,6 +161,16 @@
     nil
     {:type :value, :value "Hi"}
     {:type :value, :value "Hi"}
+
+    ;; :missing
+
+    {:type :missing}
+    {:type :value, :value "Bonjour"}
+    {:type :missing}
+
+    {:type :value, :value "Bonjour"}
+    {:type :missing}
+    {:type :value, :value "Bonjour"}
 
     ;; :value
 

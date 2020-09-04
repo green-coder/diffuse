@@ -11,6 +11,7 @@
                        (h/fn #(>= % 0))))
           'size (h/fn pos-int?)
           'diff (h/alt [:nil (h/val nil)]
+                       [:missing (h/map [:type (h/val :missing)])]
                        [:value (h/map [:type (h/val :value)]
                                       [:value (h/ref 'value)])]
                        [:set (-> (h/map

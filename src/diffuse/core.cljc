@@ -7,12 +7,17 @@
   "Applies the change specified in the diff to data.
 
    When the `:type` of diff is:
+   - `:missing`, diff has the following format:
+     ```
+     {:type :missing}
+     ```
+     It represents a top level value which does not exist.
    - `:value`, diff has the following format:
      ```
      {:type :value
       :value val}
      ```
-     val replaces the data.
+     It represents a new top level value which replaces any previous data.
    - `:set`, diff has the following format:
      ```
      {:type :set
@@ -38,13 +43,14 @@
                  [:insert [val0 val1 ...]]
                  ...}}
      ```
-     Consecutive elements in :index-op are not supposed be of the same type.
+     Consecutive elements in :index-op are not supposed to be of the same type.
 
    When diff is nil, the data is returned unchanged."
   [diff data]
   (if (nil? diff)
     data
     (case (:type diff)
+      :missing nil
       :value (:value diff)
       :set (-> data
                (set/difference (:disj diff))
@@ -277,8 +283,9 @@
    (cond
      (nil? base-diff) new-diff
      (nil? new-diff) base-diff
-     (= :value (:type new-diff)) new-diff
+     (#{:missing :value} (:type new-diff)) new-diff
      :else (case (:type base-diff)
+             :missing new-diff
              :value {:type :value
                      :value (apply new-diff (:value base-diff))}
              :set {:type :set

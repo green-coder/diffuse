@@ -8,6 +8,11 @@
   "A diff with no effect."
   nil)
 
+(def missing
+  "Returns a diff which represent the removal of a previously existing value.
+   This diff is expected to be used only at the top level of any diff hierarchy."
+  {:type :missing})
+
 (defn value
   "Returns a diff which represent a replacement by a given value.
    This diff is expected to be used only at the top level of any diff hierarchy."
