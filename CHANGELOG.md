@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Versions prior to v0.1.0 are considered experimental, their API may change.
 
+## [0.0.5] - 2020-09-04
+
+### Fixed
+- The previous release broke the build, due to a small dyslexic typo on the documentation meta data.
+  Definitely not my day.
+
 ## [0.0.4] - 2020-09-04
 
 ### Fixed

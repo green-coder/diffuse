@@ -4,14 +4,12 @@
             [diffuse.core :as d]
             [clojure.walk :as walk]))
 
-(def no-op
-  ^{:doc "A diff with no effect."}
-  nil)
+(def ^{:doc "A diff with no effect."}
+  no-op nil)
 
-(def missing
-  ^{:doc "Returns a diff which represent the removal of a previously existing value.
+(def ^{:doc "Returns a diff which represent the removal of a previously existing value.
           This diff is expected to be used only at the top level of any diff hierarchy."}
-  {:type :missing})
+  missing {:type :missing})
 
 (defn value
   "Returns a diff which represent a replacement by a given value.
