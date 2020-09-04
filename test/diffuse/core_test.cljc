@@ -26,7 +26,7 @@
      :key-op {:a [:assoc 10]
               :b [:update {:type :value
                            :value 20}]
-              :c :dissoc}}
+              :c [:dissoc]}}
     {:a 1
      :b 2
      :c 3}
@@ -170,7 +170,7 @@
 
     ;; (comp :value :map)
     {:type :value, :value "Hi"}
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :value, :value "Hi"}
 
     ;; (comp :value :set)
@@ -179,7 +179,7 @@
     {:type :value, :value "Hi"}
 
     ;; (comp :map :value)
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :value, :value {:a 1, :b 2}}
     {:type :value, :value {:b 2}}
 
@@ -217,27 +217,27 @@
     {:type :map, :key-op {:a [:update {:type :map, :key-op {:ab [:assoc 1]
                                                             :ac [:assoc 2]}}]}}
 
-    {:type :map, :key-op {:a :dissoc}}
-    {:type :map, :key-op {:b :dissoc}}
-    {:type :map, :key-op {:a :dissoc, :b :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
+    {:type :map, :key-op {:b [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
-    {:type :map, :key-op {:a :dissoc}}
-    {:type :map, :key-op {:a :dissoc, :b :dissoc}}
-    {:type :map, :key-op {:a :dissoc, :b :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
-    {:type :map, :key-op {:a :dissoc, :b :dissoc}}
-    {:type :map, :key-op {:a :dissoc}}
-    {:type :map, :key-op {:a :dissoc, :b :dissoc}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
     ;; (comp :assoc :dissoc)
     {:type :map, :key-op {:a [:assoc 1]}}
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:assoc 1]}}
 
     ;; (comp :dissoc :assoc)
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:assoc 1]}}
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
 
     ;; (comp :assoc :update)
     {:type :map, :key-op {:a [:assoc 1]}}
@@ -251,13 +251,13 @@
 
     ;; (comp :update :dissoc) .. strange, but supported
     {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:assoc 2]}}
 
     ;; (comp :dissoc :update)
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
-    {:type :map, :key-op {:a :dissoc}}
+    {:type :map, :key-op {:a [:dissoc]}}
 
     ;; :vector
 

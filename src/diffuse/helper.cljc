@@ -9,7 +9,8 @@
   nil)
 
 (defn value
-  "Returns a diff which represent a replacement by a given value."
+  "Returns a diff which represent a replacement by a given value.
+   This diff is expected to be used only at the top level of any diff hierarchy."
   [val]
   {:type :value
    :value val})
@@ -48,8 +49,8 @@
   "Returns a diff which represents the dissoc operation on a map."
   [key & keys]
   {:type :map
-   :key-op (into {key :dissoc}
-                 (map (fn [key] [key :dissoc]))
+   :key-op (into {key [:dissoc]}
+                 (map (fn [key] [key [:dissoc]]))
                  keys)})
 
 (defn vec-remsert

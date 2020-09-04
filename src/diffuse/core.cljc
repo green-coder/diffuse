@@ -26,7 +26,7 @@
      {:type :map
       :key-op {key0 [:assoc val0]}
                key1 [:update diff1]
-               key2 :dissoc
+               key2 [:dissoc]
                ...}
      ```
    - `:vector` or a sequence, diff has the following format:
@@ -50,12 +50,11 @@
                (set/difference (:disj diff))
                (set/union (:conj diff)))
       :map (reduce-kv (fn [data key op]
-                        (if (= op :dissoc)
-                          (dissoc data key)
-                          (case (first op)
-                            :assoc (assoc data key (second op))
-                            :update (update data key (fn [val]
-                                                       (apply (second op) val))))))
+                        (case (first op)
+                          :assoc (assoc data key (second op))
+                          :update (update data key (fn [val]
+                                                     (apply (second op) val)))
+                          :dissoc (dissoc data key)))
                       data
                       (:key-op diff))
       :vector (->> (loop [output []
@@ -296,12 +295,11 @@
                                                            (= (first new-op) :update))
                                                     (let [base-op (get base-ops key)
                                                           new-op-diff (second new-op)]
-                                                      (case base-op
+                                                      (case (first base-op)
                                                         nil new-op
-                                                        :dissoc [:assoc (apply new-op-diff nil)]
-                                                        (case (first base-op)
-                                                          :assoc [:assoc (apply new-op-diff (second base-op))]
-                                                          :update [:update (comp new-op-diff (second base-op))])))
+                                                        :assoc [:assoc (apply new-op-diff (second base-op))]
+                                                        :update [:update (comp new-op-diff (second base-op))]
+                                                        :dissoc [:assoc (apply new-op-diff nil)]))
                                                     new-op)
                                                   (assoc ops key)))
                                            base-ops

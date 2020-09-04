@@ -39,7 +39,7 @@
                :key-op {:a [:assoc 1]
                         :b [:update {:type :value
                                      :value 2}]
-                        :c :dissoc}}))
+                        :c [:dissoc]}}))
 
   (is (not (valid? {:type :vector})))
   (is (not (valid? {:type :vector

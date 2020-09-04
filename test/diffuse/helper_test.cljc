@@ -103,7 +103,7 @@
   ;                    :b [:assoc b]
   ;                    :c [:update {:type :set
   ;                                 :conj #{c}}]
-  ;                    :d :dissoc}})
+  ;                    :d [:dissoc]}})
   ;       (macroexpand-1 '(h/let [a 101
   ;                               b 102
   ;                               c 103]

@@ -30,7 +30,7 @@
                                                                                (h/ref 'value))]
                                                              [:update (h/vector (h/val :update)
                                                                                 (h/ref 'diff))]
-                                                             [:dissoc (h/val :dissoc)]))
+                                                             [:dissoc (h/vector (h/val :dissoc))]))
                                             (h/with-condition
                                               (h/fn (fn [key-op]
                                                       (pos? (count key-op))))))])]
