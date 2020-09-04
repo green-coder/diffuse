@@ -1,6 +1,7 @@
 {:paths ["src"]
 
- :deps {minimallist {:mvn/version "0.0.3"}}
+ ;; No deps ^_^
+ :deps {}
 
  :aliases {:test {:extra-paths ["test"]
                   :extra-deps  {org.clojure/clojure {:mvn/version "1.10.1"}
@@ -8,7 +9,9 @@
 
                                 lambdaisland/kaocha           {:mvn/version "1.0.641"}
                                 lambdaisland/kaocha-cljs      {:mvn/version "0.0-71"}
-                                lambdaisland/kaocha-junit-xml {:mvn/version "0.0.76"}}}
+                                lambdaisland/kaocha-junit-xml {:mvn/version "0.0.76"}
+
+                                minimallist/minimallist {:mvn/version "0.0.6"}}}
 
            :depstar {:extra-deps {seancorfield/depstar {:mvn/version "1.0.94"}}}
 
