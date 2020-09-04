@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Versions prior to v0.1.0 are considered experimental, their API may change.
 
+## [0.0.4] - 2020-09-04
+
+### Fixed
+- Cljdoc fixes
+
 ## [0.0.3] - 2020-09-04
 
 ### Added

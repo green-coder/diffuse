@@ -5,12 +5,12 @@
             [clojure.walk :as walk]))
 
 (def no-op
-  "A diff with no effect."
+  ^{:doc "A diff with no effect."}
   nil)
 
 (def missing
-  "Returns a diff which represent the removal of a previously existing value.
-   This diff is expected to be used only at the top level of any diff hierarchy."
+  ^{:doc "Returns a diff which represent the removal of a previously existing value.
+          This diff is expected to be used only at the top level of any diff hierarchy."}
   {:type :missing})
 
 (defn value
