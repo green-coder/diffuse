@@ -134,16 +134,3 @@
              last-key (last keys)]
       (update-in data butlast-keys assoc last-key val))
     (value val)))
-
-(defmacro let
-  "This macro allows to compose diffs at compile time, for a better performance.
-   It only works with static keys and indexes. The values to assoc or insert have
-   to be defined in the bindings."
-  [bindings body]
-  (cl/let [replacement-map (into {}
-                                 (comp (partition-all 2)
-                                       (map (fn [[var _]]
-                                              [var `(symbol ~(name var))])))
-                                 bindings)]
-    `(cl/let ~bindings
-       ~(eval (walk/postwalk-replace replacement-map body)))))
