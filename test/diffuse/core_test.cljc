@@ -107,10 +107,10 @@
                          [[:remove 2] [:no-op 2]]))))
 
 
-(deftest index-ops-comp-test
+(deftest comp-index-ops-test
   (are [base-iops new-iops expected-result]
     (= expected-result
-       (#'d/index-ops-comp base-iops new-iops))
+       (#'d/comp-index-ops base-iops new-iops))
 
     [[:no-op 1] [:remove 2]]
     [[:no-op 2] [:insert [1 2 3]]]

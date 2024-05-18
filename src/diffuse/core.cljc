@@ -119,75 +119,74 @@
 
 (comment
   ;; Those are the rules for combining the operations on indexed collections.
-  ;; (here, `comp` refers to `index-ops-comp`)
 
   ;; :no-op
-  [[:no-op 2] & b]
   [[:no-op 2] & a]
-  [[:no-op 2] & (comp b a)]
+  [[:no-op 2] & b]
+  [[:no-op 2] & (comp-index-ops a b)]
 
+  [[:no-op      2] & a]
   [[:update [d e]] & b]
-  [[:no-op      2] & a]
-  [[:update [d e]] & (comp b a)]
+  [[:update [d e]] & (comp-index-ops a b)]
 
-  [[:remove 2] & b]
   [[:no-op  2] & a]
-  [[:remove 2] & (comp b a)]
+  [[:remove 2] & b]
+  [[:remove 2] & (comp-index-ops a b)]
 
-  [[:insert [x y]] & b]
   [[:no-op      2] & a]
-  [[:insert [x y]] & (comp b (cons [:no-op 2] a))]
+  [[:insert [x y]] & b]
+  [[:insert [x y]] & (comp-index-ops (cons [:no-op 2] a) b)]
 
   ;; :update
+  [[:update [d e]] & a]
   [[:no-op      2] & b]
-  [[:update [d e]] & a]
-  [[:update [d e]] & (comp b a)]
+  [[:update [d e]] & (comp-index-ops a b)]
 
+  [[:update [d e]] & a]
   [[:update [f g]] & b]
-  [[:update [d e]] & a]
-  [[:update [(comp-diff f d) (comp-diff g e)]] & (comp b a)]
+  [[:update [(comp-diff d f) (comp-diff e g)]] & (comp-index-ops a b)]
 
+  [[:update [d e]] & a]
   [[:remove     2] & b]
-  [[:update [d e]] & a]
-  [[:remove     2] & (comp b a)]
+  [[:remove     2] & (comp-index-ops a b)]
 
-  [[:insert [x y]] & b]
   [[:update [d e]] & a]
-  [[:insert [x y]] & (comp b (cons [:update [d e]] a))]
+  [[:insert [x y]] & b]
+  [[:insert [x y]] & (comp-index-ops (cons [:update [d e]] a) b)]
 
   ;; :remove
+  [[:remove 2] & a]
   [[:no-op  2] & b]
-  [[:remove 2] & a]
-  [[:remove 2] & (comp (cons [:no-op 2] b) a)]
+  [[:remove 2] & (comp-index-ops a (cons [:no-op 2] b))]
 
+  [[:remove     2] & a]
   [[:update [d e]] & b]
-  [[:remove     2] & a]
-  [[:remove     2] & (comp (cons [:update [d e]] b) a)]
+  [[:remove     2] & (comp-index-ops a (cons [:update [d e]] b))]
 
-  [[:remove 2] & b]
   [[:remove 2] & a]
-  [[:remove 2] & (comp (cons [:remove 2] b) a)]
+  [[:remove 2] & b]
+  [[:remove 2] & (comp-index-ops a (cons [:remove 2] b))]
 
-  [[:insert [x y]] & b]
   [[:remove     2] & a]
-  [[:remove     2] & (comp (cons [:insert [x y]] b) a)]
+  [[:insert [x y]] & b]
+  [[:remove     2] & (comp-index-ops a (cons [:insert [x y]] b))]
 
   ;; :insert
+  [[:insert [x y]] & a]
   [[:no-op      2] & b]
-  [[:insert [x y]] & a]
-  [[:insert [x y]] & (comp b a)]
+  [[:insert [x y]] & (comp-index-ops a b)]
 
+  [[:insert [x y]] & a]
   [[:update [d e]] & b]
-  [[:insert [x y]] & a]
-  [[:insert [(diff-apply d x) (diff-apply e y)]] & (comp b a)]
+  [[:insert [(diff-apply x d) (diff-apply y e)]] & (comp-index-ops a b)]
 
+  [[:insert [x y]] & a]
   [[:remove     2] & b]
-  [[:insert [x y]] & a]
-  (comp b a)
+  (comp-index-ops a b)
 
-  [[:insert [u v]] & b]
   [[:insert [x y]] & a]
-  [[:insert [u v]] & (comp b (cons [:insert [x y]] a))]
+  [[:insert [u v]] & b]
+  [[:insert [u v]] & (comp-index-ops (cons [:insert [x y]] a) b)]
 
   ;; Observations:
   ;; 1. :remove in base-iop has the first priority to go in the output.  (4 cases)
@@ -201,7 +200,7 @@
 
 (declare comp-diff)
 
-(defn- index-ops-comp [base-iops new-iops]
+(defn- comp-index-ops [base-iops new-iops]
   (loop [output []
          base-iops base-iops
          new-iops new-iops]
@@ -316,7 +315,7 @@
                        :key-op key-ops}))
              :vector (let [new-iops (:index-op new-diff)
                            base-iops (:index-op base-diff)
-                           index-ops (-> (index-ops-comp base-iops new-iops)
+                           index-ops (-> (comp-index-ops base-iops new-iops)
                                          index-ops-canonical)]
                        (when (seq index-ops)
                          {:type :vector
