@@ -26,12 +26,12 @@
                                                   (empty? (set/intersection disj-set conj-set))))))))]
                        [:map (h/map
                                [:type (h/val :map)]
-                               [:key-op (-> (h/map-of (h/ref 'key)
-                                                      (h/alt [:assoc (h/vector (h/val :assoc)
-                                                                               (h/ref 'value))]
-                                                             [:update (h/vector (h/val :update)
-                                                                                (h/ref 'diff))]
-                                                             [:dissoc (h/vector (h/val :dissoc))]))
+                               [:key-op (-> (h/map-of (h/vector (h/ref 'key)
+                                                                (h/alt [:assoc (h/vector (h/val :assoc)
+                                                                                         (h/ref 'value))]
+                                                                       [:update (h/vector (h/val :update)
+                                                                                          (h/ref 'diff))]
+                                                                       [:dissoc (h/vector (h/val :dissoc))])))
                                             (h/with-condition
                                               (h/fn (fn [key-op]
                                                       (pos? (count key-op))))))])]
