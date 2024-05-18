@@ -94,26 +94,28 @@
     [[op (subvec arg 0 size)] [op (subvec arg size)]]
     [[op size] [op (- arg size)]]))
 
-(defn- head-split [new-iops base-iops]
-  (let [new-iop (first new-iops)
-        base-iop (first base-iops)
-        new-size (index-op-size new-iop)
-        base-size (index-op-size base-iop)]
+(defn- head-split [base-iops new-iops]
+  (let [base-iop (first base-iops)
+        new-iop (first new-iops)
+        base-size (index-op-size base-iop)
+        new-size (index-op-size new-iop)]
     (cond
-      (= new-size base-size)
-      [new-iops base-iops]
+      (= base-size new-size)
+      [base-iops new-iops]
 
-      (< new-size base-size)
+      (> base-size new-size)
       (let [[base-head base-tail] (index-op-split base-iop new-size)]
-        [new-iops (->> (rest base-iops)
-                       (cons base-tail)
-                       (cons base-head))])
+        [(->> (rest base-iops)
+              (cons base-tail)
+              (cons base-head))
+         new-iops])
 
-      (> new-size base-size)
+      (< base-size new-size)
       (let [[new-head new-tail] (index-op-split new-iop base-size)]
-        [(->> (rest new-iops)
+        [base-iops
+         (->> (rest new-iops)
               (cons new-tail)
-              (cons new-head)) base-iops]))))
+              (cons new-head))]))))
 
 (comment
   ;; Those are the rules for combining the operations on indexed collections.
@@ -199,47 +201,47 @@
 
 (declare comp-diff)
 
-(defn- index-ops-comp [new-iops base-iops]
+(defn- index-ops-comp [base-iops new-iops]
   (loop [output []
-         new-iops new-iops
-         base-iops base-iops]
+         base-iops base-iops
+         new-iops new-iops]
     (cond
       (empty? base-iops) (into output new-iops)
       (empty? new-iops) (into output base-iops)
-      :else (let [[split-new-iops split-base-iops] (head-split new-iops base-iops)
-                  [new-op new-arg :as new-iop] (first split-new-iops)
-                  [base-op base-arg :as base-iop] (first split-base-iops)]
+      :else (let [[split-base-iops split-new-iops] (head-split base-iops new-iops)
+                  [base-op base-arg :as base-iop] (first split-base-iops)
+                  [new-op new-arg :as new-iop] (first split-new-iops)]
               (if (= new-op :insert)
                 (recur (conj output new-iop)
-                       (rest split-new-iops)
-                       split-base-iops)
+                       split-base-iops
+                       (rest split-new-iops))
                 (case base-op
                   :remove (recur (conj output base-iop)
-                                 split-new-iops
-                                 (rest split-base-iops))
+                                 (rest split-base-iops)
+                                 split-new-iops)
                   :no-op (recur (conj output new-iop)
-                                (rest split-new-iops)
-                                (rest split-base-iops))
+                                (rest split-base-iops)
+                                (rest split-new-iops))
                   :update (case new-op
                             :no-op (recur (conj output base-iop)
-                                          (rest split-new-iops)
-                                          (rest split-base-iops))
+                                          (rest split-base-iops)
+                                          (rest split-new-iops))
                             :update (recur (conj output [:update (mapv comp-diff base-arg new-arg)])
-                                           (rest split-new-iops)
-                                           (rest split-base-iops))
+                                           (rest split-base-iops)
+                                           (rest split-new-iops))
                             :remove (recur (conj output new-iop)
-                                           (rest split-new-iops)
-                                           (rest split-base-iops)))
+                                           (rest split-base-iops)
+                                           (rest split-new-iops)))
                   :insert (case new-op
                             :no-op (recur (conj output base-iop)
-                                          (rest split-new-iops)
-                                          (rest split-base-iops))
+                                          (rest split-base-iops)
+                                          (rest split-new-iops))
                             :update (recur (conj output [:insert (mapv apply-diff base-arg new-arg)])
-                                           (rest split-new-iops)
-                                           (rest split-base-iops))
+                                           (rest split-base-iops)
+                                           (rest split-new-iops))
                             :remove (recur output
-                                           (rest split-new-iops)
-                                           (rest split-base-iops)))))))))
+                                           (rest split-base-iops)
+                                           (rest split-new-iops)))))))))
 
 (defn- index-ops-canonical [iops]
   (into []
@@ -314,7 +316,7 @@
                        :key-op key-ops}))
              :vector (let [new-iops (:index-op new-diff)
                            base-iops (:index-op base-diff)
-                           index-ops (-> (index-ops-comp new-iops base-iops)
+                           index-ops (-> (index-ops-comp base-iops new-iops)
                                          index-ops-canonical)]
                        (when (seq index-ops)
                          {:type :vector

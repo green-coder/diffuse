@@ -93,31 +93,31 @@
 
 
 (deftest head-split-test
-  (is (= [[[:remove 2] [:remove 1] [:no-op 2]]
-          [[:no-op 2] [:remove 3]]]
-         (#'d/head-split [[:remove 3] [:no-op 2]]
-                         [[:no-op 2] [:remove 3]])))
-  (is (= [[[:remove 2] [:no-op 2]]
-          [[:no-op 2] [:no-op 1] [:remove 3]]]
-         (#'d/head-split [[:remove 2] [:no-op 2]]
-                         [[:no-op 3] [:remove 3]])))
-  (is (= [[[:remove 2] [:no-op 2]]
-          [[:no-op 2] [:remove 3]]]
-         (#'d/head-split [[:remove 2] [:no-op 2]]
-                         [[:no-op 2] [:remove 3]]))))
+  (is (= [[[:no-op 2] [:remove 3]]
+          [[:remove 2] [:remove 1] [:no-op 2]]]
+         (#'d/head-split [[:no-op 2] [:remove 3]]
+                         [[:remove 3] [:no-op 2]])))
+  (is (= [[[:no-op 2] [:no-op 1] [:remove 3]]
+          [[:remove 2] [:no-op 2]]]
+         (#'d/head-split [[:no-op 3] [:remove 3]]
+                         [[:remove 2] [:no-op 2]])))
+  (is (= [[[:no-op 2] [:remove 3]]
+          [[:remove 2] [:no-op 2]]]
+         (#'d/head-split [[:no-op 2] [:remove 3]]
+                         [[:remove 2] [:no-op 2]]))))
 
 
 (deftest index-ops-comp-test
-  (are [new-iops base-iops expected-result]
+  (are [base-iops new-iops expected-result]
     (= expected-result
-       (#'d/index-ops-comp new-iops base-iops))
+       (#'d/index-ops-comp base-iops new-iops))
 
-    [[:no-op 2] [:insert [1 2 3]]]
     [[:no-op 1] [:remove 2]]
+    [[:no-op 2] [:insert [1 2 3]]]
     [[:no-op 1] [:remove 1] [:remove 1] [:no-op 1] [:insert [1 2 3]]]
 
-    [[:no-op 2] [:insert [1 2 3]]]
     [[:no-op 2] [:remove 2]]
+    [[:no-op 2] [:insert [1 2 3]]]
     [[:no-op 2] [:insert [1 2]] [:insert [3]] [:remove 1] [:remove 1]]))
 
 
