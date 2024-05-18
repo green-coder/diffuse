@@ -270,8 +270,8 @@
 
    Therefore:
    ```
-    (= (d/comp-diff {:type :set, :disj #{:a}}
-                    {:type :set, :conj #{:a}})
+    (= (d/comp-diff {:type :set, :conj #{:a}}
+                    {:type :set, :disj #{:a}})
        {:type :set, :disj #{:a}})
    ```
    "
@@ -319,5 +319,5 @@
                        (when (seq index-ops)
                          {:type :vector
                           :index-op index-ops})))))
-  ([diff-a diff-b & diffs]
-   (reduce comp-diff (comp-diff diff-a diff-b) diffs)))
+  ([base-diff new-diff & more-diffs]
+   (reduce comp-diff (comp-diff base-diff new-diff) more-diffs)))
