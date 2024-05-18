@@ -1,10 +1,8 @@
 (ns diffuse.core
-  (:refer-clojure :exclude [apply comp])
-  (:require [clojure.core :as cl]
-            [clojure.set :as set]))
+  (:require [clojure.set :as set]))
 
-(defn apply
-  "Applies the change specified in the diff to data.
+(defn apply-diff
+  "Applies to a data the change specified in a diff.
 
    When the `:type` of diff is:
    - `:missing`, diff has the following format:
@@ -46,7 +44,7 @@
      Consecutive elements in :index-op are not supposed to be of the same type.
 
    When diff is nil, the data is returned unchanged."
-  [diff data]
+  [data diff]
   (if (nil? diff)
     data
     (case (:type diff)
@@ -58,8 +56,7 @@
       :map (reduce-kv (fn [data key op]
                         (case (first op)
                           :assoc (assoc data key (second op))
-                          :update (update data key (fn [val]
-                                                     (apply (second op) val)))
+                          :update (update data key apply-diff (second op))
                           :dissoc (dissoc data key)))
                       data
                       (:key-op diff))
@@ -72,7 +69,7 @@
                            :no-op (recur (conj output (subvec data 0 arg))
                                          (rest index-ops)
                                          (subvec data arg))
-                           :update (recur (conj output (mapv apply arg (subvec data 0 (count arg))))
+                           :update (recur (conj output (mapv apply-diff (subvec data 0 (count arg)) arg))
                                           (rest index-ops)
                                           (subvec data (count arg)))
                            :remove (recur output
@@ -146,7 +143,7 @@
 
   [[:update [f g]] & b]
   [[:update [d e]] & a]
-  [[:update [(d/comp f d) (d/comp g e)]] & (comp b a)]
+  [[:update [(comp-diff f d) (comp-diff g e)]] & (comp b a)]
 
   [[:remove     2] & b]
   [[:update [d e]] & a]
@@ -200,7 +197,7 @@
 
   _)
 
-(declare comp)
+(declare comp-diff)
 
 (defn- index-ops-comp [new-iops base-iops]
   (loop [output []
@@ -227,7 +224,7 @@
                             :no-op (recur (conj output base-iop)
                                           (rest split-new-iops)
                                           (rest split-base-iops))
-                            :update (recur (conj output [:update (mapv comp new-arg base-arg)])
+                            :update (recur (conj output [:update (mapv comp-diff new-arg base-arg)])
                                            (rest split-new-iops)
                                            (rest split-base-iops))
                             :remove (recur (conj output new-iop)
@@ -237,7 +234,7 @@
                             :no-op (recur (conj output base-iop)
                                           (rest split-new-iops)
                                           (rest split-base-iops))
-                            :update (recur (conj output [:insert (mapv apply new-arg base-arg)])
+                            :update (recur (conj output [:insert (mapv apply-diff base-arg new-arg)])
                                            (rest split-new-iops)
                                            (rest split-base-iops))
                             :remove (recur output
@@ -246,25 +243,26 @@
 
 (defn- index-ops-canonical [iops]
   (into []
-        (cl/comp (partition-by (cl/comp {:no-op :no-op
-                                         :update :update
-                                         :remove :remsert
-                                         :insert :remsert} first))
-                 (mapcat (fn [index-ops]
-                           (let [op (ffirst index-ops)]
-                             (case op
-                               :no-op [[op (transduce (map second) + index-ops)]]
-                               :update [[op (into [] (mapcat second) index-ops)]]
-                               (:remove :insert) (let [{removes :remove
-                                                        inserts :insert} (group-by first index-ops)
-                                                       remove-count (transduce (map second) + removes)
-                                                       insert-elms (into [] (mapcat second) inserts)]
-                                                   (cond-> []
-                                                     (pos? remove-count) (conj [:remove remove-count])
-                                                     (pos? (count insert-elms)) (conj [:insert insert-elms]))))))))
+        (comp (partition-by (comp {:no-op :no-op
+                                   :update :update
+                                   :remove :remsert
+                                   :insert :remsert}
+                                  first))
+              (mapcat (fn [index-ops]
+                        (let [op (ffirst index-ops)]
+                          (case op
+                            :no-op [[op (transduce (map second) + index-ops)]]
+                            :update [[op (into [] (mapcat second) index-ops)]]
+                            (:remove :insert) (let [{removes :remove
+                                                     inserts :insert} (group-by first index-ops)
+                                                    remove-count (transduce (map second) + removes)
+                                                    insert-elms (into [] (mapcat second) inserts)]
+                                                (cond-> []
+                                                  (pos? remove-count) (conj [:remove remove-count])
+                                                  (pos? (count insert-elms)) (conj [:insert insert-elms]))))))))
         iops))
 
-(defn comp
+(defn comp-diff
   "Returns a diff whose application is equivalent to the consecutive application of multiple diffs.
 
    We suppose that the diff were crafted without necessarily been aware of the data on which it
@@ -272,8 +270,8 @@
 
    Therefore:
    ```
-    (= (d/comp {:type :set, :disj #{:a}}
-               {:type :set, :conj #{:a}})
+    (= (d/comp-diff {:type :set, :disj #{:a}}
+                    {:type :set, :conj #{:a}})
        {:type :set, :disj #{:a}})
    ```
    "
@@ -287,7 +285,7 @@
      :else (case (:type base-diff)
              :missing new-diff
              :value {:type :value
-                     :value (apply new-diff (:value base-diff))}
+                     :value (apply-diff (:value base-diff) new-diff)}
              :set {:type :set
                    :disj (set/union (:disj new-diff)
                                     (set/difference (:disj base-diff)
@@ -304,9 +302,9 @@
                                                           new-op-diff (second new-op)]
                                                       (case (first base-op)
                                                         nil new-op
-                                                        :assoc [:assoc (apply new-op-diff (second base-op))]
-                                                        :update [:update (comp new-op-diff (second base-op))]
-                                                        :dissoc [:assoc (apply new-op-diff nil)]))
+                                                        :assoc [:assoc (apply-diff (second base-op) new-op-diff)]
+                                                        :update [:update (comp-diff new-op-diff (second base-op))]
+                                                        :dissoc [:assoc (apply-diff nil new-op-diff)]))
                                                     new-op)
                                                   (assoc ops key)))
                                            base-ops
@@ -322,4 +320,4 @@
                          {:type :vector
                           :index-op index-ops})))))
   ([diff-z diff-y & diffs]
-   (reduce comp (comp diff-z diff-y) diffs)))
+   (reduce comp-diff (comp-diff diff-z diff-y) diffs)))

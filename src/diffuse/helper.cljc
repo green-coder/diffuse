@@ -78,7 +78,7 @@
    (vec-remsert index 1 [val]))
   ([index val & index-vals]
    (reduce (fn [diff [index val]]
-             (d/comp diff (vec-assoc index val)))
+             (d/comp-diff diff (vec-assoc index val)))
            (vec-assoc index val)
            (partition-all 2 index-vals))))
 

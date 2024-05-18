@@ -7,63 +7,64 @@
 
 
 (deftest apply-test
-  (are [diff data result]
-    (= [(m/valid? diff-model diff) (d/apply diff data)]
+  (are [data diff result]
+    (= [(m/valid? diff-model diff) (d/apply-diff data diff)]
        [true result])
 
-    {:type :missing}
     "Hello"
+    {:type :missing}
     nil
 
+    "Hello"
     {:type :value
      :value "Bonjour"}
-    "Hello"
     "Bonjour"
 
+    #{:a :b :c}
     {:type :set
      :disj #{:c}
      :conj #{:x :y}}
-    #{:a :b :c}
     #{:a :b :x :y}
 
+    {:a 1
+     :b 2
+     :c 3}
     {:type :map
      :key-op {:a [:assoc 10]
               :b [:update {:type :value
                            :value 20}]
               :c [:dissoc]}}
-    {:a 1
-     :b 2
-     :c 3}
     {:a 10
      :b 20}
 
+    ['a 'b 'c 'd]
     {:type :vector
      :index-op [[:no-op 1]
                 [:remove 1]
                 [:insert ['bb]]
                 [:update [{:type :value
                            :value 'cc}]]]}
-    ['a 'b 'c 'd]
     ['a 'bb 'cc 'd]
 
+    ['a 'b 'c 'd 'e 'f]
     {:type :vector
      :index-op [[:remove 1]
                 [:no-op 1]
                 [:remove 2]
                 [:no-op 1]
                 [:remove 1]]}
-    ['a 'b 'c 'd 'e 'f]
     ['b 'e]
 
+    ['a 'b 'c 'd]
     {:type :vector
      :index-op [[:insert [:a :b]]
                 [:no-op 2]
                 [:insert [:c :d]]
                 [:no-op 2]
                 [:insert [:e :f]]]}
-    ['a 'b 'c 'd]
     [:a :b 'a 'b :c :d 'c 'd :e :f]
 
+    ['a 'b 'c 'd 'e 'f]
     {:type :vector
      :index-op [[:remove 1]
                 [:no-op 1]
@@ -77,7 +78,6 @@
               [5 1]]
      :insert [[1 [:a :b]]
               [2 [:c :d]]]}
-    ['a 'b 'c 'd 'e 'f]
     ['b :a :b 'e :c :d]))
 
 
@@ -145,7 +145,7 @@
   (are [new-diff base-diff result]
     (= [(and (m/valid? diff-model new-diff)
              (m/valid? diff-model base-diff))
-        (d/comp new-diff base-diff)]
+        (d/comp-diff new-diff base-diff)]
        [true result])
 
     ;; nil
