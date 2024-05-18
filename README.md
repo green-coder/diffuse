@@ -46,10 +46,10 @@ Diffs are pure data. You can create them via some helper functions or write them
 (require '[diffuse.core :as d])
 
 ;; Combine diffs together to get a new diff.
-(d/comp diff-2 diff-1)
+(d/comp-diff diff-1 diff-2)
 
 ;; Apply a diff to get an updated data.
-(d/apply diff data)
+(d/apply-diff data diff)
 ```
 
 #### Example
@@ -57,19 +57,19 @@ Diffs are pure data. You can create them via some helper functions or write them
 On sets:
 
 ```clojure
-(d/apply (d/comp (h/set-conj :pim)
-                 (h/set-disj :pam))
-         #{:pam :poum})
+(d/apply-diff #{:pam :poum}
+              (d/comp-diff (h/set-disj :pam)
+                           (h/set-conj :pim)))
 ;=> #{:pim :poum}
 ```
 
 On maps:
 
 ```clojure
-(d/apply (d/comp (h/map-assoc :a 1, :b 2)
-                 (h/map-update :c (h/set-conj 2))
-                 (h/map-dissoc :d))
-         {:a 2, :c #{1}, :d 4})
+(d/apply-diff {:a 2, :c #{1}, :d 4}
+              (d/comp-diff (h/map-dissoc :d)
+                           (h/map-update :c (h/set-conj 2))
+                           (h/map-assoc :a 1, :b 2)))
 ;=> {:a 1, :b 2, :c #{1 2}}
 ```
 
@@ -78,25 +78,25 @@ On vectors:
 ```clojure
 ;; With diffuse, you can correct the ISO 3166 which is plainly wrong.
 ;; https://www.change.org/p/iso-change-the-present-taiwan-province-of-china-to-taiwan-4
-(d/apply (h/vec-remove 1 3)
-         '[Taiwan province of China])
+(d/apply-diff '[Taiwan province of China])
+              (h/vec-remove 1 3))
 ;=> [Taiwan]
 
 ;; You can also correct it with true official information, regardless of how confusing it can be.
-(d/apply (h/vec-assoc 1 'Republic)
-         '[Taiwan province of China])
+(d/apply-diff '[Taiwan province of China]
+              (h/vec-assoc 1 'Republic))
 ;=> [Taiwan Republic of China]
 
 ;; You can also declare your love for Taiwan.
-(d/apply (h/vec-remsert 1 3 '[number 1 !!!])
-         '[Taiwan province of China])
+(d/apply-diff '[Taiwan province of China]
+              (h/vec-remsert 1 3 '[number 1 !!!]))
 ;=> [Taiwan number 1 !!!]
 
 ;; You can also use it to promote the best beer of Taiwan.
-(d/apply (d/comp (h/vec-insert 1 '[Beer])
-                 (h/vec-insert 1 '[number 1 !!!])
-                 (h/vec-remove 1 3))
-         '[Taiwan province of China])
+(d/apply-diff '[Taiwan province of China]
+               (d/comp-diff (h/vec-remove 1 3)
+                            (h/vec-insert 1 '[number 1 !!!])
+                            (h/vec-insert 1 '[Beer])))
 ;=> [Taiwan Beer number 1 !!!]
 ```
 

@@ -5,10 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 Versions prior to v0.1.0 are considered experimental, their API may change.
 
+### Changed
+- Renamed `diffuse.core/apply` to `diffuse.core/apply-diff`, and switch the order of its parameters.
+- Renamed `diffuse.core/comp` to `diffuse.core/comp-diff`, and switch the order of its parameters.
+- Removed `diffuse.helper/let`.
+
 ## [0.0.5] - 2020-09-04
 
 ### Fixed
-- The previous release broke the build, due to a small dyslexic typo on the documentation meta data.
+- The previous release broke the build, due to a small dyslexic typo on the documentation metadata.
   Definitely not my day.
 
 ## [0.0.4] - 2020-09-04
