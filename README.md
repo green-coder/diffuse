@@ -104,7 +104,7 @@ On vectors:
 
 You certainly wonder why this library was built, that's understandable.
 Sometimes things exist, are beautiful, and still don't make sense. That's how it is.
-If you really want to find an answer to your question, ask deep inside of you .. why ??
+If you really want to find an answer to your question, ask deep inside yourself ... why ??
 
 Please open an issue if you find an answer, sharing is caring.
 

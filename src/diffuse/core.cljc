@@ -37,11 +37,11 @@
    - `:vector` or a sequence, diff has the following format:
      ```
      {:type :vector
-      :index-op {[:no-op size0]
+      :index-op [[:no-op size0]
                  [:update [diff0 diff1 ...]]
                  [:remove size2]
                  [:insert [val0 val1 ...]]
-                 ...}}
+                 ...]}
      ```
      Consecutive elements in :index-op are not supposed to be of the same type.
 
