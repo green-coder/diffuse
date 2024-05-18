@@ -5,8 +5,8 @@
             [diffuse.helper :as h]))
 
 (deftest no-op-test
-  (is (= (h/value :foo) (d/comp-diff (h/value :foo) h/no-op)))
-  (is (= (h/value :foo) (d/comp-diff h/no-op (h/value :foo)))))
+  (is (= (h/value :foo) (d/comp-diff h/no-op (h/value :foo))))
+  (is (= (h/value :foo) (d/comp-diff (h/value :foo) h/no-op))))
 
 (deftest value-test
   (is (= #{:foo}
@@ -14,27 +14,27 @@
                        (h/value #{:foo}))))
   (is (= #{:foo}
          (d/apply-diff [:bar]
-                       (d/comp-diff (h/value #{:foo})
-                                    (h/value {:foo :bar})))))
+                       (d/comp-diff (h/value {:foo :bar})
+                                    (h/value #{:foo})))))
   (is (= (h/value #{:foo})
-         (d/comp-diff (h/value #{:foo})
-                      (h/value {:foo :bar})))))
+         (d/comp-diff (h/value {:foo :bar})
+                      (h/value #{:foo})))))
 
 (deftest set-test
   (is (= #{:pim :poum}
          (d/apply-diff #{:pam :poum}
-                       (d/comp-diff (h/set-conj :pim)
-                                    (h/set-disj :pam))))))
+                       (d/comp-diff (h/set-disj :pam)
+                                    (h/set-conj :pim))))))
 
 (deftest map-test
   (is (= {:a 1, :b 2}
          (d/apply-diff {:a 2, :d 4}
-                       (d/comp-diff (h/map-assoc :a 1, :b 2)
-                                    (h/map-dissoc :d)))))
+                       (d/comp-diff (h/map-dissoc :d)
+                                    (h/map-assoc :a 1, :b 2)))))
   (is (= {:a [1 2 3]}
          (d/apply-diff {:a [1], :z 7}
-                       (d/comp-diff (h/map-update :a (h/vec-remsert 1 0 [2 3]))
-                                    (h/map-dissoc :z))))))
+                       (d/comp-diff (h/map-dissoc :z)
+                                    (h/map-update :a (h/vec-remsert 1 0 [2 3])))))))
 
 (deftest vector-test
   (is (= [0 :x :y :z 3 4]
@@ -54,29 +54,30 @@
                                      (h/set-disj :y :z)))))
   (is (= [0 10 20 3 40]
          (d/apply-diff [0 1 2 3 4]
-                       (d/comp-diff (h/vec-assoc 2 20)
+                       (d/comp-diff (h/vec-assoc 4 40)
+                                    (h/vec-assoc 1 9999)
                                     (h/vec-assoc 1 10)
-                                    (h/vec-assoc 4 40)))))
+                                    (h/vec-assoc 2 20)))))
   (is (= ['zero 10 20 3 {:a 1, :b 2}]
          (d/apply-diff [0 1 2 3 {:a 1}]
-                       (d/comp-diff (h/vec-assoc 0 'zero)
+                       (d/comp-diff (h/vec-remsert 1 2 [10 20])
                                     (h/vec-update 4 (h/map-assoc :b 2))
-                                    (h/vec-remsert 1 2 [10 20]))))))
+                                    (h/vec-assoc 0 'zero))))))
 
 (deftest assoc-test
   (is (= (h/vec-assoc 2 :a)
          (h/assoc [0 1 2 3 4]
                   2 :a)))
-  (is (= (d/comp-diff (h/vec-assoc 2 :a)
-                      (h/vec-assoc 4 :b))
+  (is (= (d/comp-diff (h/vec-assoc 4 :b)
+                      (h/vec-assoc 2 :a))
          (h/assoc [0 1 2 3 4]
                   2 :a
                   4 :b)))
   (is (= (h/map-assoc 2 :a)
          (h/assoc {0 :zero, 2 :x, 4 :y}
                   2 :a)))
-  (is (= (d/comp-diff (h/map-assoc 2 :a)
-                      (h/map-assoc 4 :b))
+  (is (= (d/comp-diff (h/map-assoc 4 :b)
+                      (h/map-assoc 2 :a))
          (h/assoc {2 :x, 4 :y}
                   2 :a
                   4 :b))))

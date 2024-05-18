@@ -1,8 +1,7 @@
 (ns diffuse.helper
   (:refer-clojure :exclude [assoc update update-in assoc-in let])
   (:require [clojure.core :as cl]
-            [diffuse.core :as d]
-            [clojure.walk :as walk]))
+            [diffuse.core :as d]))
 
 (def ^{:doc "A diff with no effect."}
   no-op nil)
@@ -83,12 +82,12 @@
            (partition-all 2 index-vals))))
 
 (defn vec-remove
-  "Returns a diff which represents an range-remove on a vector."
+  "Returns a diff which represents a range-remove on a vector."
   [index remove-count]
   (vec-remsert index remove-count nil))
 
 (defn vec-insert
-  "Returns a diff which represents an range-insert on a vector."
+  "Returns a diff which represents a range-insert on a vector."
   [index insert-coll]
   (vec-remsert index 0 insert-coll))
 

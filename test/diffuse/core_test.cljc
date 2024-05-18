@@ -142,10 +142,10 @@
 
 
 (deftest comp-diffs-test
-  (are [new-diff base-diff result]
-    (= [(and (m/valid? diff-model new-diff)
-             (m/valid? diff-model base-diff))
-        (d/comp-diff new-diff base-diff)]
+  (are [base-diff new-diff result]
+    (= [(and (m/valid? diff-model base-diff)
+             (m/valid? diff-model new-diff))
+        (d/comp-diff base-diff new-diff)]
        [true result])
 
     ;; nil
@@ -154,167 +154,167 @@
     nil
     nil
 
-    {:type :value, :value "Hi"}
     nil
+    {:type :value, :value "Hi"}
     {:type :value, :value "Hi"}
 
-    nil
     {:type :value, :value "Hi"}
+    nil
     {:type :value, :value "Hi"}
 
     ;; :missing
 
-    {:type :missing}
     {:type :value, :value "Bonjour"}
+    {:type :missing}
     {:type :missing}
 
-    {:type :value, :value "Bonjour"}
     {:type :missing}
+    {:type :value, :value "Bonjour"}
     {:type :value, :value "Bonjour"}
 
     ;; :value
 
-    {:type :value, :value "Hi"}
     {:type :value, :value "Bonjour"}
     {:type :value, :value "Hi"}
-
     {:type :value, :value "Hi"}
+
     {:type :map, :key-op {:a [:assoc 1]}}
     {:type :value, :value "Hi"}
-
-    ;; (comp :value :map)
     {:type :value, :value "Hi"}
+
+    ;; (comp-diff :map :value)
     {:type :map, :key-op {:a [:dissoc]}}
     {:type :value, :value "Hi"}
-
-    ;; (comp :value :set)
     {:type :value, :value "Hi"}
+
+    ;; (comp-diff :set :value)
     {:type :set, :disj #{:x :y} :conj #{:a :b}}
     {:type :value, :value "Hi"}
+    {:type :value, :value "Hi"}
 
-    ;; (comp :map :value)
-    {:type :map, :key-op {:a [:dissoc]}}
+    ;; (comp-diff :value :map)
     {:type :value, :value {:a 1, :b 2}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :value, :value {:b 2}}
 
-    ;; (comp :set :value)
-    {:type :set, :disj #{:x :y} :conj #{:a :b}}
+    ;; (comp-diff :value :set)
     {:type :value, :value #{:x :b}}
+    {:type :set, :disj #{:x :y} :conj #{:a :b}}
     {:type :value, :value #{:a :b}}
 
     ;; :set
 
-    {:type :set, :disj #{:x :y} :conj #{:a :b}}
     {:type :set, :disj #{:a} :conj #{:x}}
+    {:type :set, :disj #{:x :y} :conj #{:a :b}}
     {:type :set, :disj #{:x :y} :conj #{:a :b}}
 
-    {:type :set, :disj #{:a} :conj #{:x}}
     {:type :set, :disj #{:x :y} :conj #{:a :b}}
+    {:type :set, :disj #{:a} :conj #{:x}}
     {:type :set, :disj #{:a :y} :conj #{:x :b}}
 
     ;; :map
 
-    {:type :map, :key-op {:a [:assoc 1]}}
     {:type :map, :key-op {:b [:assoc 2]}}
+    {:type :map, :key-op {:a [:assoc 1]}}
     {:type :map, :key-op {:a [:assoc 1], :b [:assoc 2]}}
 
-    {:type :map, :key-op {:a [:assoc 10]}}
     {:type :map, :key-op {:a [:assoc 1], :b [:assoc 2]}}
+    {:type :map, :key-op {:a [:assoc 10]}}
     {:type :map, :key-op {:a [:assoc 10], :b [:assoc 2]}}
 
-    {:type :map, :key-op {:a [:assoc 1], :b [:assoc 2]}}
     {:type :map, :key-op {:a [:assoc 10]}}
     {:type :map, :key-op {:a [:assoc 1], :b [:assoc 2]}}
+    {:type :map, :key-op {:a [:assoc 1], :b [:assoc 2]}}
 
-    {:type :map, :key-op {:a [:update {:type :map, :key-op {:ab [:assoc 1]}}]}}
     {:type :map, :key-op {:a [:update {:type :map, :key-op {:ac [:assoc 2]}}]}}
+    {:type :map, :key-op {:a [:update {:type :map, :key-op {:ab [:assoc 1]}}]}}
     {:type :map, :key-op {:a [:update {:type :map, :key-op {:ab [:assoc 1]
                                                             :ac [:assoc 2]}}]}}
 
-    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:b [:dissoc]}}
-    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
-
     {:type :map, :key-op {:a [:dissoc]}}
-    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
     {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
     {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
     {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
-    ;; (comp :assoc :dissoc)
-    {:type :map, :key-op {:a [:assoc 1]}}
     {:type :map, :key-op {:a [:dissoc]}}
-    {:type :map, :key-op {:a [:assoc 1]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
+    {:type :map, :key-op {:a [:dissoc], :b [:dissoc]}}
 
-    ;; (comp :dissoc :assoc)
+    ;; (comp-diff :dissoc :assoc)
     {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:assoc 1]}}
+    {:type :map, :key-op {:a [:assoc 1]}}
+
+    ;; (comp-diff :assoc :dissoc)
+    {:type :map, :key-op {:a [:assoc 1]}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:dissoc]}}
 
-    ;; (comp :assoc :update)
-    {:type :map, :key-op {:a [:assoc 1]}}
+    ;; (comp-diff :update :assoc)
     {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
     {:type :map, :key-op {:a [:assoc 1]}}
-
-    ;; (comp :update :assoc)
-    {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
     {:type :map, :key-op {:a [:assoc 1]}}
+
+    ;; (comp-diff :assoc :update)
+    {:type :map, :key-op {:a [:assoc 1]}}
+    {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
     {:type :map, :key-op {:a [:assoc 2]}}
 
-    ;; (comp :update :dissoc) .. strange, but supported
-    {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
+    ;; (comp-diff :dissoc :update) .. strange, but supported
     {:type :map, :key-op {:a [:dissoc]}}
+    {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
     {:type :map, :key-op {:a [:assoc 2]}}
 
-    ;; (comp :dissoc :update)
-    {:type :map, :key-op {:a [:dissoc]}}
+    ;; (comp-diff :update :dissoc)
     {:type :map, :key-op {:a [:update {:type :value, :value 2}]}}
+    {:type :map, :key-op {:a [:dissoc]}}
     {:type :map, :key-op {:a [:dissoc]}}
 
     ;; :vector
 
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
     {:type :vector, :index-op [[:no-op 1] [:remove 1] [:insert [:b]]]}
+    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
     {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
 
-    {:type :vector, :index-op [[:remove 1] [:insert [:aa]]]}
     {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
+    {:type :vector, :index-op [[:remove 1] [:insert [:aa]]]}
     {:type :vector, :index-op [[:remove 2] [:insert [:aa :b]]]}
 
-    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
     {:type :vector, :index-op [[:remove 1] [:insert [:aa]]]}
     {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
+    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
 
-    {:type :vector, :index-op [[:update [{:type :map, :key-op {:ab [:assoc 1]}}]]]}
     {:type :vector, :index-op [[:update [{:type :map, :key-op {:ac [:assoc 2]}}]]]}
+    {:type :vector, :index-op [[:update [{:type :map, :key-op {:ab [:assoc 1]}}]]]}
     {:type :vector, :index-op [[:update [{:type :map, :key-op {:ab [:assoc 1]
                                                                :ac [:assoc 2]}}]]]}
 
-    ;; (comp :assoc :update)
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
+    ;; (comp-diff :update :assoc)
     {:type :vector, :index-op [[:update [{:type :value, :value :b}]]]}
+    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
     {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
 
-    ;; (comp :update :assoc)
-    {:type :vector, :index-op [[:update [{:type :value, :value :b}]]]}
+    ;; (comp-diff :assoc :update)
     {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
+    {:type :vector, :index-op [[:update [{:type :value, :value :b}]]]}
     {:type :vector, :index-op [[:remove 1] [:insert [:b]]]}
 
-    ;; (comp :remove :remove)
+    ;; (comp-diff :remove :remove)
     {:type :vector, :index-op [[:remove 1] [:no-op 1] [:remove 1]]}
     {:type :vector, :index-op [[:remove 1] [:no-op 1] [:remove 1]]}
     {:type :vector, :index-op [[:remove 3] [:no-op 1] [:remove 1]]}
 
-    ;; (comp :insert :insert) without overlap
+    ;; (comp-diff :insert :insert) without overlap
+    {:type :vector
+     :index-op [[:no-op 1]
+                [:insert ['x 'y 'z]]]}
     {:type :vector
      :index-op [[:insert ['a 'b]]
                 [:no-op 5]
                 [:insert ['u 'v]]]}
-    {:type :vector
-     :index-op [[:no-op 1]
-                [:insert ['x 'y 'z]]]}
     {:type :vector
      :index-op [[:insert ['a 'b]]
                 [:no-op 1]
@@ -322,17 +322,17 @@
                 [:no-op 1]
                 [:insert ['u 'v]]]}
 
-    ;; (comp :insert :insert) with overlap
-    {:type :vector, :index-op [[:no-op 4] [:insert ['x 'y 'z]]]}
+    ;; (comp-diff :insert :insert) with overlap
     {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'c]]]}
+    {:type :vector, :index-op [[:no-op 4] [:insert ['x 'y 'z]]]}
     {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'x 'y 'z 'c]]]}
 
-    ;; (comp :remove :insert) with overlap, insert bigger than remove
-    {:type :vector, :index-op [[:no-op 3] [:remove 1]]}
+    ;; (comp-diff :insert :remove) with overlap, insert bigger than remove
     {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'c]]]}
+    {:type :vector, :index-op [[:no-op 3] [:remove 1]]}
     {:type :vector, :index-op [[:no-op 2] [:insert ['a 'c]]]}
 
-    ;;; (comp :remove :insert) with overlap, remove bigger than insert
-    {:type :vector, :index-op [[:no-op 1] [:remove 3]]}
+    ;; (comp-diff :insert :remove) with overlap, remove bigger than insert
     {:type :vector, :index-op [[:no-op 2] [:insert ['a]]]}
+    {:type :vector, :index-op [[:no-op 1] [:remove 3]]}
     {:type :vector, :index-op [[:no-op 1] [:remove 2]]}))

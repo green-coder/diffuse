@@ -224,7 +224,7 @@
                             :no-op (recur (conj output base-iop)
                                           (rest split-new-iops)
                                           (rest split-base-iops))
-                            :update (recur (conj output [:update (mapv comp-diff new-arg base-arg)])
+                            :update (recur (conj output [:update (mapv comp-diff base-arg new-arg)])
                                            (rest split-new-iops)
                                            (rest split-base-iops))
                             :remove (recur (conj output new-iop)
@@ -277,7 +277,7 @@
    "
   ([] nil)
   ([diff] diff)
-  ([new-diff base-diff]
+  ([base-diff new-diff]
    (cond
      (nil? base-diff) new-diff
      (nil? new-diff) base-diff
@@ -303,7 +303,7 @@
                                                       (case (first base-op)
                                                         nil new-op
                                                         :assoc [:assoc (apply-diff (second base-op) new-op-diff)]
-                                                        :update [:update (comp-diff new-op-diff (second base-op))]
+                                                        :update [:update (comp-diff (second base-op) new-op-diff)]
                                                         :dissoc [:assoc (apply-diff nil new-op-diff)]))
                                                     new-op)
                                                   (assoc ops key)))
@@ -319,5 +319,5 @@
                        (when (seq index-ops)
                          {:type :vector
                           :index-op index-ops})))))
-  ([diff-z diff-y & diffs]
-   (reduce comp-diff (comp-diff diff-z diff-y) diffs)))
+  ([diff-a diff-b & diffs]
+   (reduce comp-diff (comp-diff diff-a diff-b) diffs)))
