@@ -1,6 +1,6 @@
-(ns diffuse.helper
-  (:refer-clojure :exclude [assoc update update-in assoc-in let])
-  (:require [clojure.core :as cl]
+(ns diffuse.builder
+  (:refer-clojure :exclude [assoc update update-in assoc-in])
+  (:require [clojure.core :as cc]
             [diffuse.core :as d]))
 
 (def ^{:doc "A diff with no effect."}
@@ -117,19 +117,19 @@
 (defn update-in
   "Returns a diff which represents an update-in on a given data."
   [data keys f-diff & args]
-  (cl/let [up (fn up [data keys f args]
-                (if (seq keys)
-                  (cl/let [[key & rest-keys] keys]
-                    (->> (up (get data key) rest-keys f args)
-                         (update data key)))
-                  (apply f data args)))]
+  (let [up (fn up [data keys f args]
+             (if (seq keys)
+               (let [[key & rest-keys] keys]
+                 (->> (up (get data key) rest-keys f args)
+                      (update data key)))
+               (apply f data args)))]
     (up data keys f-diff args)))
 
 (defn assoc-in
   "Returns a diff which represents an assoc-in on a given data."
   [data keys val]
   (if (seq keys)
-    (cl/let [butlast-keys (butlast keys)
-             last-key (last keys)]
+    (let [butlast-keys (butlast keys)
+          last-key (last keys)]
       (update-in data butlast-keys assoc last-key val))
     (value val)))
