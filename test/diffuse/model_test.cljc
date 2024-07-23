@@ -1,6 +1,5 @@
 (ns diffuse.model-test
-  (:require #?(:clj  [clojure.test :refer [deftest testing is are]]
-               :cljs [cljs.test :refer [deftest testing is are] :include-macros true])
+  (:require [clojure.test :refer [deftest testing is are]]
             [minimallist.core :as m]
             [diffuse.model :refer [diff-model]]))
 

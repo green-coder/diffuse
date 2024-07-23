@@ -1,6 +1,5 @@
 (ns diffuse.builder-test
-  (:require #?(:clj  [clojure.test :refer [deftest testing is are]]
-               :cljs [cljs.test :refer [deftest testing is are] :include-macros true])
+  (:require [clojure.test :refer [deftest testing is are]]
             [diffuse.core :as d]
             [diffuse.builder :as b]))
 
@@ -43,7 +42,7 @@
   (is (= [0 1 2]
          (d/apply-diff []
                        (b/vec-remsert 0 0 [0 1 2]))))
-  (is (thrown? #?(:clj Exception :cljs js/Object)
+  (is (thrown? #?(:clj Exception :cljs js/Error)
                (d/apply-diff []
                              (b/vec-remsert 0 1 nil))))
   (is (= [#{:a :b :c} [1 2 3] #{:x}]
