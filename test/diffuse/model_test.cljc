@@ -8,7 +8,6 @@
 
 (deftest model-test
 
-  (is (valid? {:type :missing}))
   (is (not (valid? {:type :value})))
   (is (valid? {:type :value
                :value 'foobar}))

@@ -6,10 +6,6 @@
 (def ^{:doc "A diff with no effect."}
   no-op nil)
 
-(def ^{:doc "Returns a diff which represent the removal of a previously existing value.
-          This diff is expected to be used only at the top level of any diff hierarchy."}
-  missing {:type :missing})
-
 (defn value
   "Returns a diff which represent a replacement by a given value.
    This diff is expected to be used only at the top level of any diff hierarchy."

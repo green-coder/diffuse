@@ -5,11 +5,6 @@
   "Applies to a data the change specified in a diff.
 
    When the `:type` of diff is:
-   - `:missing`, diff has the following format:
-     ```
-     {:type :missing}
-     ```
-     It represents a top level value which does not exist.
    - `:value`, diff has the following format:
      ```
      {:type :value
@@ -48,7 +43,6 @@
   (if (nil? diff)
     data
     (case (:type diff)
-      :missing nil
       :value (:value diff)
       :set (-> data
                (set/difference (:disj diff))
@@ -282,9 +276,8 @@
    (cond
      (nil? base-diff) new-diff
      (nil? new-diff) base-diff
-     (#{:missing :value} (:type new-diff)) new-diff
+     (= :value (:type new-diff)) new-diff
      :else (case (:type base-diff)
-             :missing new-diff
              :value {:type :value
                      :value (apply-diff (:value base-diff) new-diff)}
              :set {:type :set

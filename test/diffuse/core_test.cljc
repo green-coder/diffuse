@@ -11,7 +11,7 @@
        [true result])
 
     "Hello"
-    {:type :missing}
+    {:type :value :value nil}
     nil
 
     "Hello"
@@ -161,13 +161,11 @@
     nil
     {:type :value, :value "Hi"}
 
-    ;; :missing
-
     {:type :value, :value "Bonjour"}
-    {:type :missing}
-    {:type :missing}
+    {:type :value, :value nil}
+    {:type :value, :value nil}
 
-    {:type :missing}
+    {:type :value, :value nil}
     {:type :value, :value "Bonjour"}
     {:type :value, :value "Bonjour"}
 

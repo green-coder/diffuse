@@ -15,3 +15,4 @@ pom.xml.asc
 node_modules/
 resources/public/js
 .cljs_node_repl
+.clj-kondo
