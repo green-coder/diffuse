@@ -4,11 +4,11 @@
  :deps {}
 
  :aliases {:test {:extra-paths ["test"]
-                  :extra-deps  {org.clojure/clojure {:mvn/version "1.11.3"}
-                                org.clojure/clojurescript {:mvn/version "1.11.132"}
+                  :extra-deps  {org.clojure/clojure {:mvn/version "1.12.4"}
+                                org.clojure/clojurescript {:mvn/version "1.12.134"}
 
-                                lambdaisland/kaocha           {:mvn/version "1.90.1383"}
-                                lambdaisland/kaocha-cljs      {:mvn/version "1.5.154"}
+                                lambdaisland/kaocha           {:mvn/version "1.91.1392"}
+                                lambdaisland/kaocha-cljs      {:mvn/version "1.9.181"}
                                 lambdaisland/kaocha-junit-xml {:mvn/version "1.17.101"}
 
                                 minimallist/minimallist {:mvn/version "0.0.10"}}}
@@ -16,8 +16,13 @@
            :depstar {:extra-deps {seancorfield/depstar {:mvn/version "1.0.94"}}}
 
            ; clojure -M:outdated --upgrade
-           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.8.1201"}}
-                      :main-opts  ["-m" "antq.core"]}}}
+           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1276"}}
+                      :main-opts  ["-m" "antq.core"]}
+
+           ; clojure -M:format "check" "src" "test"
+           ; clojure -M:format "fix" "src" "test"
+           :format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.9.2"}}
+                    :main-opts  ["-m" "cljfmt.main"]}}}
 
 ;; Memo for deploying a new release:
 ;; - change the version in pom.xml

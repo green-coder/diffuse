@@ -36,15 +36,12 @@
                                                       (pos? (count key-op))))))])]
                        [:vector (h/map
                                   [:type (h/val :vector)]
-                                  [:index-op (-> (h/vector-of (h/alt [:no-op (h/vector (h/val :no-op)
+                                  [:index-op (h/vector-of (h/alt [:copy-from (h/vector (h/val :copy-from)
+                                                                                       (h/ref 'index)
                                                                                        (h/ref 'size))]
-                                                                     [:update (h/vector (h/val :update)
-                                                                                        (h/in-vector (h/+ (h/ref 'diff))))]
-                                                                     [:remove (h/vector (h/val :remove)
-                                                                                        (h/ref 'size))]
-                                                                     [:insert (h/vector (h/val :insert)
-                                                                                        (h/in-vector (h/+ (h/ref 'value))))]))
-                                                 (h/with-condition
-                                                   (h/fn (fn [index-op]
-                                                           (pos? (count index-op))))))])])]
-         (h/ref 'diff)))
+                                                                 [:update-from (h/vector (h/val :update-from)
+                                                                                         (h/ref 'index)
+                                                                                         (h/in-vector (h/+ (h/ref 'diff))))]
+                                                                 [:values (h/vector (h/val :values)
+                                                                                    (h/in-vector (h/+ (h/ref 'value))))]))])])]
+    (h/ref 'diff)))

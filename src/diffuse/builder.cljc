@@ -51,64 +51,101 @@
                  (map (fn [key] [key [:dissoc]]))
                  keys)})
 
+;; ---------------------------------------------------------------------
+;; Helpers for vectors
+;; ---------------------------------------------------------------------
+
 (defn vec-remsert
   "Returns a diff which represents a remove followed by an insert at a given index."
-  [index remove-count insert-coll]
-  {:type :vector
-   :index-op (cond-> []
-               (pos? index) (conj [:no-op index])
-               (pos? remove-count) (conj [:remove remove-count])
-               (seq insert-coll) (conj [:insert (vec insert-coll)]))})
+  [data index remove-count insert-coll]
+  (when (or (> remove-count 0)
+            (seq insert-coll))
+    (let [tail-start (+ index remove-count)
+          tail-size (- (count data) tail-start)]
+      {:type :vector
+       :index-op (cond-> []
+                   (pos? index) (conj [:copy-from 0 index])
+                   (seq insert-coll) (conj [:values (vec insert-coll)])
+                   (pos? tail-size) (conj [:copy-from tail-start tail-size]))})))
 
 (defn vec-update
   "Returns a diff representing updates at a given index."
-  [index diff & diffs]
-  {:type :vector
-   :index-op (-> (if (pos? index) [[:no-op index]] [])
-                 (conj [:update (into [diff] diffs)]))})
+  [data index diff & diffs]
+  (let [all-diffs (into [diff] diffs)
+        tail-start (+ index (count all-diffs))
+        tail-size (- (count data) tail-start)]
+    {:type :vector
+     :index-op (-> []
+                   (cond-> (pos? index) (conj [:copy-from 0 index]))
+                   (conj [:update-from index all-diffs])
+                   (cond-> (pos? tail-size) (conj [:copy-from tail-start tail-size])))}))
 
 (defn vec-assoc
   "Returns a diff which represents an assoc on a vector."
-  ([index val]
-   (vec-remsert index 1 [val]))
-  ([index val & index-vals]
+  ([data index val]
+   (vec-remsert data index 1 [val]))
+  ([data index val & index-vals]
    (reduce (fn [diff [index val]]
-             (d/comp-diff diff (vec-assoc index val)))
-           (vec-assoc index val)
+             (d/comp-diff diff (vec-assoc data index val)))
+           (vec-assoc data index val)
            (partition-all 2 index-vals))))
 
 (defn vec-remove
   "Returns a diff which represents a range-remove on a vector."
-  [index remove-count]
-  (vec-remsert index remove-count nil))
+  [data index remove-count]
+  (vec-remsert data index remove-count nil))
 
 (defn vec-insert
   "Returns a diff which represents a range-insert on a vector."
-  [index insert-coll]
-  (vec-remsert index 0 insert-coll))
+  [data index insert-coll]
+  (vec-remsert data index 0 insert-coll))
 
+(defn vec-move
+  "Returns a diff which represents moving a subvector within a vector."
+  [data from-index size to-index]
+  (let [from-end (+ from-index size)
+        data-size (count data)]
+    (when (and (pos? size)
+               (or (< to-index from-index)
+                   (> to-index from-end)))
+      {:type     :vector
+       :index-op (if (< to-index from-index)
+                   ;; Moving left: [prefix | moved | middle | suffix]
+                   (-> []
+                     (cond-> (pos? to-index) (conj [:copy-from 0 to-index]))
+                     (conj [:copy-from from-index size])
+                     (conj [:copy-from to-index (- from-index to-index)])
+                     (cond-> (< from-end data-size) (conj [:copy-from from-end (- data-size from-end)])))
+                   ;; Moving right: [prefix | middle | moved | suffix]
+                   (-> []
+                     (cond-> (pos? from-index) (conj [:copy-from 0 from-index]))
+                     (conj [:copy-from from-end (- to-index from-end)])
+                     (conj [:copy-from from-index size])
+                     (cond-> (< to-index data-size) (conj [:copy-from to-index (- data-size to-index)]))))})))
 
 ;; ---------------------------------------------------------------------
-;; Helpers with use a data parameters
+;; Helpers which use a data parameter
 ;; ---------------------------------------------------------------------
 
 (defn assoc
   "Returns a diff which represents an assoc on a map or a vector,
-   depending on the type of a given data."
+   depending on the type of the given data."
   ([data key val]
    (if (map? data)
      (map-assoc key val)
-     (vec-assoc key val)))
+     (vec-assoc data key val)))
   ([data key val & key-vals]
-   (apply (if (map? data) map-assoc vec-assoc) key val key-vals)))
+   (if (map? data)
+     (apply map-assoc key val key-vals)
+     (apply vec-assoc data key val key-vals))))
 
 (defn update
   "Returns a diff which represents an update on a map or a vector,
-   depending on the type of a given data."
+   depending on the type of the given data."
   [data key diff]
   (if (map? data)
     (map-update key diff)
-    (vec-update key diff)))
+    (vec-update data key diff)))
 
 (defn update-in
   "Returns a diff which represents an update-in on a given data."

@@ -43,17 +43,11 @@
   (is (not (valid? {:type :vector})))
   (is (not (valid? {:type :vector
                     :index-op {}})))
-  (is (not (valid? {:type :vector
-                    :remove []})))
-  (is (not (valid? {:type :vector
-                    :insert []})))
-
   (is (valid? {:type :vector
-               :index-op [[:remove 1]
-                          [:insert [1]]
-                          [:update [{:type :value
-                                     :value 2}]]]}))
+               :index-op []}))
   (is (valid? {:type :vector
-               :index-op [[:remove 2]
-                          [:no-op 1]
-                          [:insert ['a 'b 'c]]]})))
+               :index-op [[:copy-from 0 1]
+                          [:values [1]]
+                          ;; still valid, even if it could be simpler
+                          [:update-from 2 [{:type :value
+                                            :value 3}]]]})))

@@ -9,6 +9,8 @@ Versions prior to v0.1.0 are considered experimental, their API may change.
 - Renamed `diffuse.core/apply` to `diffuse.core/apply-diff`, and switch the order of its parameters.
 - Renamed `diffuse.core/comp` to `diffuse.core/comp-diff`, and switch the order of its parameters.
 - Removed `diffuse.helper/let`.
+- Vector diff implemented differently, was supporting updates, removals, insertions, and now also
+  supports duplications and movements within the same vector.
 
 ## [0.0.5] - 2020-09-04
 

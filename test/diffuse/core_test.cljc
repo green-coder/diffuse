@@ -4,7 +4,6 @@
             [diffuse.model :refer [diff-model]]
             [minimallist.core :as m]))
 
-
 (deftest apply-test
   (are [data diff result]
     (= [(m/valid? diff-model diff) (d/apply-diff data diff)]
@@ -38,107 +37,77 @@
 
     ['a 'b 'c 'd]
     {:type :vector
-     :index-op [[:no-op 1]
-                [:remove 1]
-                [:insert ['bb]]
-                [:update [{:type :value
-                           :value 'cc}]]]}
+     :index-op [[:copy-from 0 1]
+                [:values ['bb]]
+                [:update-from 2 [{:type :value :value 'cc}]]
+                [:copy-from 3 1]]}
     ['a 'bb 'cc 'd]
 
     ['a 'b 'c 'd 'e 'f]
     {:type :vector
-     :index-op [[:remove 1]
-                [:no-op 1]
-                [:remove 2]
-                [:no-op 1]
-                [:remove 1]]}
+     :index-op [[:copy-from 1 1]
+                [:copy-from 4 1]]}
     ['b 'e]
 
     ['a 'b 'c 'd]
     {:type :vector
-     :index-op [[:insert [:a :b]]
-                [:no-op 2]
-                [:insert [:c :d]]
-                [:no-op 2]
-                [:insert [:e :f]]]}
+     :index-op [[:values [:a :b]]
+                [:copy-from 0 2]
+                [:values [:c :d]]
+                [:copy-from 2 2]
+                [:values [:e :f]]]}
     [:a :b 'a 'b :c :d 'c 'd :e :f]
 
     ['a 'b 'c 'd 'e 'f]
     {:type :vector
-     :index-op [[:remove 1]
-                [:no-op 1]
-                [:insert [:a :b]]
-                [:remove 2]
-                [:no-op 1]
-                [:remove 1]
-                [:insert [:c :d]]]
-     :remove [[0 1]
-              [2 2]
-              [5 1]]
-     :insert [[1 [:a :b]]
-              [2 [:c :d]]]}
+     :index-op [[:copy-from 1 1]
+                [:values [:a :b]]
+                [:copy-from 4 1]
+                [:values [:c :d]]]}
     ['b :a :b 'e :c :d]))
 
-
-(deftest index-op-split-test
-  (is (= [[:no-op 2] [:no-op 1]]
-         (#'d/index-op-split [:no-op 3] 2)))
-  (is (= [[:update ['d 'e]] [:update ['f]]]
-         (#'d/index-op-split [:update ['d 'e 'f]] 2)))
-  (is (= [[:remove 2] [:remove 1]]
-         (#'d/index-op-split [:remove 3] 2)))
-  (is (= [[:insert ['x 'y]] [:insert ['z]]]
-         (#'d/index-op-split [:insert ['x 'y 'z]] 2))))
-
-
-(deftest head-split-test
-  (is (= [[[:no-op 2] [:remove 3]]
-          [[:remove 2] [:remove 1] [:no-op 2]]]
-         (#'d/head-split [[:no-op 2] [:remove 3]]
-                         [[:remove 3] [:no-op 2]])))
-  (is (= [[[:no-op 2] [:no-op 1] [:remove 3]]
-          [[:remove 2] [:no-op 2]]]
-         (#'d/head-split [[:no-op 3] [:remove 3]]
-                         [[:remove 2] [:no-op 2]])))
-  (is (= [[[:no-op 2] [:remove 3]]
-          [[:remove 2] [:no-op 2]]]
-         (#'d/head-split [[:no-op 2] [:remove 3]]
-                         [[:remove 2] [:no-op 2]]))))
-
+(deftest index-op-slice-test
+  (is (= [:copy-from 2 2]
+         (#'d/index-op-slice [:copy-from 0 4] 2 4)))
+  (is (= [:update-from 1 ['e 'f]]
+         (#'d/index-op-slice [:update-from 0 ['d 'e 'f]] 1 3)))
+  (is (= [:values ['x 'y]]
+         (#'d/index-op-slice [:values ['x 'y 'z]] 0 2))))
 
 (deftest comp-index-ops-test
-  (are [base-iops new-iops expected-result]
-    (= expected-result
-       (#'d/comp-index-ops base-iops new-iops))
+  (let [data ['a 'b 'c 'd]]
+    (is (= [[:copy-from 2 2]]
+           (#'d/comp-index-ops
+            [[:copy-from 0 1] [:values ['bb]] [:copy-from 2 2]]   ; a bb c d
+            [[:copy-from 2 2]]))))                                  ; c d
 
-    [[:no-op 1] [:remove 2]]
-    [[:no-op 2] [:insert [1 2 3]]]
-    [[:no-op 1] [:remove 1] [:remove 1] [:no-op 1] [:insert [1 2 3]]]
-
-    [[:no-op 2] [:remove 2]]
-    [[:no-op 2] [:insert [1 2 3]]]
-    [[:no-op 2] [:insert [1 2]] [:insert [3]] [:remove 1] [:remove 1]]))
-
+  (let [data ['a 'b 'c]]
+    (is (= [[:copy-from 0 1] [:values ['x]] [:copy-from 1 1]]
+           (#'d/comp-index-ops
+            [[:copy-from 0 1] [:values ['x]] [:copy-from 1 2]]   ; a x b c
+            [[:copy-from 0 3]])))))                                 ; a x b
 
 (deftest index-ops-canonical-test
   (are [index-ops expected-result]
     (= expected-result (#'d/index-ops-canonical index-ops))
 
-    [[:no-op 1] [:remove 1] [:remove 1] [:no-op 1] [:insert [1 2 3]]]
-    [[:no-op 1] [:remove 2] [:no-op 1] [:insert [1 2 3]]]
+    [[:copy-from 0 1] [:copy-from 1 2]]
+    [[:copy-from 0 3]]
 
-    [[:no-op 2] [:remove 2] [:insert [1 2]] [:insert [3]]]
-    [[:no-op 2] [:remove 2] [:insert [1 2 3]]]
+    [[:update-from 0 ['d]] [:update-from 1 ['e]]]
+    [[:update-from 0 ['d 'e]]]
 
-    [[:no-op 2] [:insert [1 2]] [:insert [3]] [:remove 1] [:remove 1]]
-    [[:no-op 2] [:remove 2] [:insert [1 2 3]]]
+    [[:values ['x]] [:values ['y 'z]]]
+    [[:values ['x 'y 'z]]]
 
-    [[:remove 1] [:insert [1 2]] [:remove 1] [:insert [3]]]
-    [[:remove 2] [:insert [1 2 3]]]
+    [[:copy-from 2 1] [:copy-from 0 2]]
+    [[:copy-from 2 1] [:copy-from 0 2]]
 
-    [[:no-op 1] [:no-op 1]]
-    [[:no-op 2]]))
+    [[:update-from 1 [nil nil]]]
+    [[:copy-from 1 2]]
 
+    [[:copy-from 0 1] [:update-from 1 [nil]]]
+    [[:copy-from 0 2]]))
 
 (deftest comp-diffs-test
   (are [base-diff new-diff result]
@@ -272,64 +241,15 @@
 
     ;; :vector
 
-    {:type :vector, :index-op [[:no-op 1] [:remove 1] [:insert [:b]]]}
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
-    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
+    {:type :vector, :index-op [[:copy-from 0 1] [:values [:a]] [:copy-from 2 1]]}
+    {:type :vector, :index-op [[:copy-from 0 1] [:values [:b]] [:copy-from 2 1]]}
+    {:type :vector, :index-op [[:copy-from 0 1] [:values [:b]] [:copy-from 2 1]]}
 
-    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
-    {:type :vector, :index-op [[:remove 1] [:insert [:aa]]]}
-    {:type :vector, :index-op [[:remove 2] [:insert [:aa :b]]]}
+    {:type :vector, :index-op [[:update-from 0 [{:type :map, :key-op {:ac [:assoc 2]}}]] [:copy-from 1 2]]}
+    {:type :vector, :index-op [[:update-from 0 [{:type :map, :key-op {:ab [:assoc 1]}}]] [:copy-from 1 2]]}
+    {:type :vector, :index-op [[:update-from 0 [{:type :map, :key-op {:ab [:assoc 1]
+                                                                      :ac [:assoc 2]}}]] [:copy-from 1 2]]}
 
-    {:type :vector, :index-op [[:remove 1] [:insert [:aa]]]}
-    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
-    {:type :vector, :index-op [[:remove 2] [:insert [:a :b]]]}
-
-    {:type :vector, :index-op [[:update [{:type :map, :key-op {:ac [:assoc 2]}}]]]}
-    {:type :vector, :index-op [[:update [{:type :map, :key-op {:ab [:assoc 1]}}]]]}
-    {:type :vector, :index-op [[:update [{:type :map, :key-op {:ab [:assoc 1]
-                                                               :ac [:assoc 2]}}]]]}
-
-    ;; (comp-diff :update :assoc)
-    {:type :vector, :index-op [[:update [{:type :value, :value :b}]]]}
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
-
-    ;; (comp-diff :assoc :update)
-    {:type :vector, :index-op [[:remove 1] [:insert [:a]]]}
-    {:type :vector, :index-op [[:update [{:type :value, :value :b}]]]}
-    {:type :vector, :index-op [[:remove 1] [:insert [:b]]]}
-
-    ;; (comp-diff :remove :remove)
-    {:type :vector, :index-op [[:remove 1] [:no-op 1] [:remove 1]]}
-    {:type :vector, :index-op [[:remove 1] [:no-op 1] [:remove 1]]}
-    {:type :vector, :index-op [[:remove 3] [:no-op 1] [:remove 1]]}
-
-    ;; (comp-diff :insert :insert) without overlap
-    {:type :vector
-     :index-op [[:no-op 1]
-                [:insert ['x 'y 'z]]]}
-    {:type :vector
-     :index-op [[:insert ['a 'b]]
-                [:no-op 5]
-                [:insert ['u 'v]]]}
-    {:type :vector
-     :index-op [[:insert ['a 'b]]
-                [:no-op 1]
-                [:insert ['x 'y 'z]]
-                [:no-op 1]
-                [:insert ['u 'v]]]}
-
-    ;; (comp-diff :insert :insert) with overlap
-    {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'c]]]}
-    {:type :vector, :index-op [[:no-op 4] [:insert ['x 'y 'z]]]}
-    {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'x 'y 'z 'c]]]}
-
-    ;; (comp-diff :insert :remove) with overlap, insert bigger than remove
-    {:type :vector, :index-op [[:no-op 2] [:insert ['a 'b 'c]]]}
-    {:type :vector, :index-op [[:no-op 3] [:remove 1]]}
-    {:type :vector, :index-op [[:no-op 2] [:insert ['a 'c]]]}
-
-    ;; (comp-diff :insert :remove) with overlap, remove bigger than insert
-    {:type :vector, :index-op [[:no-op 2] [:insert ['a]]]}
-    {:type :vector, :index-op [[:no-op 1] [:remove 3]]}
-    {:type :vector, :index-op [[:no-op 1] [:remove 2]]}))
+    {:type :vector, :index-op [[:values [:x]] [:copy-from 0 3]]}
+    {:type :vector, :index-op [[:copy-from 1 3]]}
+    {:type :vector, :index-op [[:copy-from 0 3]]}))
